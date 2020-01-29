@@ -2,18 +2,30 @@ package cli
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
+	"github.com/fabienbellanger/goCodeAnalyser/cloc"
+	"github.com/fabienbellanger/goCodeAnalyser/language"
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
 
 // CmdOptions lists all command options.
 type CmdOptions struct {
-	ByFile bool
+	ByFile         bool
+	Debug          bool
+	SkipDuplicated bool
+	OutputType     string
+	ExcludeExt     string
+	IncludeLang    string
+	MatchDir       string
+	NotMatchDir    string
 }
 
 const (
+	appName = "Go Code Analyser"
 	author  = "Fabien Bellanger"
 	version = "0.0.1"
 )
@@ -22,19 +34,41 @@ var (
 	// color enables colors in console.
 	color aurora.Aurora = aurora.NewAurora(true)
 
-	// opts
-	opts = CmdOptions{}
+	// cmdOpts stores command options.
+	cmdOpts = CmdOptions{}
 
 	rootCommand = &cobra.Command{
-		Use:     "Go Code Analyser",
-		Short:   "Go Code Analyser",
-		Long:    "Go Code Analyser",
+		Use:     "goCodeAnalyser [paths]",
+		Short:   "goCodeAnalyser [paths]",
+		Long:    "goCodeAnalyser [paths]",
 		Version: version,
 		Run: func(cmd *cobra.Command, args []string) {
 			tStart := time.Now()
 
-			fmt.Printf("Args: %v\n", args)
-			fmt.Printf("Options: %+v\n", opts)
+			// Manage paths
+			// ------------
+			if len(args) == 0 {
+				cmd.Usage()
+				return
+			}
+
+			// List of all available languages
+			// -------------------------------
+			languages := language.NewDefinedLanguages()
+
+			// Fill application options
+			// ------------------------
+			appOpts := fillOptions(args, cmdOpts, languages)
+
+			fmt.Printf("Cmd Options: %+v\n", cmdOpts)
+			fmt.Printf("App Options: %+v\n", appOpts)
+
+			// Launch process
+			// --------------
+			// TODO: To implement
+			processor := cloc.NewProcessor(languages, appOpts)
+			result, err := processor.Analyse()
+			fmt.Printf("result=%v, err=%v\n", result, err)
 
 			displayDuration(time.Since(tStart))
 		},
@@ -45,11 +79,18 @@ var (
 func Execute() error {
 	// Version
 	// -------
-	// rootCommand.SetVersionTemplate("Vers,kdsfklds")
+	rootCommand.SetVersionTemplate(appName + " version " + version + "\n")
 
 	// Flags
 	// -----
-	rootCommand.Flags().BoolVarP(&opts.ByFile, "by-file", "", false, "Display by file")
+	rootCommand.Flags().BoolVar(&cmdOpts.ByFile, "by-file", false, "Display by file")
+	rootCommand.Flags().BoolVar(&cmdOpts.Debug, "debug", false, "Display debug log")
+	rootCommand.Flags().BoolVar(&cmdOpts.SkipDuplicated, "skip-duplicated", false, "Skip duplicated files")
+	rootCommand.Flags().StringVar(&cmdOpts.OutputType, "output-type", "", "Output type [values: default,json,html]")
+	rootCommand.Flags().StringVar(&cmdOpts.ExcludeExt, "exclude-ext", "", "Exclude file name extensions (separated commas)")
+	rootCommand.Flags().StringVar(&cmdOpts.IncludeLang, "include-lang", "", "Include language name (separated commas)")
+	rootCommand.Flags().StringVar(&cmdOpts.MatchDir, "match-dir", "", "Include dir name (regex)")
+	rootCommand.Flags().StringVar(&cmdOpts.NotMatchDir, "not-match-dir", "", "Exclude dir name (regex)")
 
 	// Launch root command
 	// -------------------
@@ -57,6 +98,43 @@ func Execute() error {
 		return err
 	}
 	return nil
+}
+
+// fillOptions fills applications options from command options.
+// TODO: Test
+func fillOptions(args []string, cmdOpts CmdOptions, languages *language.DefinedLanguages) *cloc.Options {
+	opts := cloc.NewOptions()
+	opts.Paths = args
+	opts.Debug = cmdOpts.Debug
+	opts.SkipDuplicated = cmdOpts.SkipDuplicated
+
+	// Excluded extensions
+	// -------------------
+	for _, ext := range strings.Split(cmdOpts.ExcludeExt, ",") {
+		e, ok := language.Extensions[ext]
+		if ok {
+			opts.ExcludeExts[e] = struct{}{}
+		}
+	}
+
+	// Match or not directory
+	// ----------------------
+	if cmdOpts.NotMatchDir != "" {
+		opts.NotMatchDir = regexp.MustCompile(cmdOpts.NotMatchDir)
+	}
+	if cmdOpts.MatchDir != "" {
+		opts.MatchDir = regexp.MustCompile(cmdOpts.MatchDir)
+	}
+
+	// Included languages
+	// ------------------
+	for _, lang := range strings.Split(cmdOpts.IncludeLang, ",") {
+		if _, ok := languages.Langs[lang]; ok {
+			opts.IncludeLangs[lang] = struct{}{}
+		}
+	}
+
+	return opts
 }
 
 // displayDuration displays commands execution duration.
