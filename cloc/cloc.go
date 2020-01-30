@@ -16,7 +16,7 @@ type Processor struct {
 // Result returns the analyse results
 type Result struct {
 	// Total         *Language
-	// Files         map[string]*ClocFile
+	Files         map[string]*File
 	Languages     map[string]*Language
 	MaxPathLength int
 }
@@ -46,7 +46,7 @@ func (p *Processor) Analyse() (*Result, error) {
 // initLanguages lists all files form paths and inits languages.
 func (p *Processor) initLanguages() (result map[string]*Language, err error) {
 	result = make(map[string]*Language, 0)
-	// filesCache := make(map[string]struct{})
+	filesCache := make(map[string]struct{})
 
 	for _, root := range p.paths {
 		vcsInRoot := isVCSDir(root)
@@ -63,6 +63,7 @@ func (p *Processor) initLanguages() (result map[string]*Language, err error) {
 
 			// Check match and not-match directory options
 			// -------------------------------------------
+			// TODO: make a function to reduce cycomatic complexity
 			dir := filepath.Dir(path)
 			if p.opts.NotMatchDir != nil && p.opts.NotMatchDir.MatchString(dir) {
 				return nil
@@ -73,14 +74,23 @@ func (p *Processor) initLanguages() (result map[string]*Language, err error) {
 
 			// Check file extension
 			// --------------------
-			// TODO: To do!
 			if ext, ok := getExtension(path, p.opts); ok {
+				// Get Language
+				// ------------
 				if lang, ok := Extensions[ext]; ok {
-					fmt.Printf("ext=%v,\tlang=%v\n", ext, lang)
-
-					// TODO: Check options
-
-					// TODO: Fill result
+					// Check Options
+					// -------------
+					if ok := checkFileOptions(path, lang, p.opts, filesCache); ok {
+						// Add to languages list
+						// ---------------------
+						if _, ok := result[lang]; !ok {
+							result[lang] = NewLanguage(
+								p.langs.Langs[lang].Name,
+								p.langs.Langs[lang].lineComments,
+								p.langs.Langs[lang].multiLines)
+						}
+						result[lang].Files = append(result[lang].Files, path)
+					}
 				}
 			}
 
