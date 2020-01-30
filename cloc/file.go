@@ -11,7 +11,7 @@ import (
 // File represents a file with its properties.
 type File struct {
 	Name     string `xml:"name,attr" json:"name"`
-	Language string `xml:"language,attr" json"language"`
+	Language string `xml:"language,attr" json:"language"`
 	Code     int32  `xml:"code,attr" json:"code"`
 	Comments int32  `xml:"comment,attr" json:"comment"`
 	Blanks   int32  `xml:"blank,attr" json:"blank"`
