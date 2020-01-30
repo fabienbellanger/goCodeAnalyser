@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/fabienbellanger/goCodeAnalyser/cloc"
-	"github.com/fabienbellanger/goCodeAnalyser/language"
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
@@ -54,19 +53,20 @@ var (
 
 			// List of all available languages
 			// -------------------------------
-			languages := language.NewDefinedLanguages()
+			languages := cloc.NewDefinedLanguages()
 
 			// Fill application options
 			// ------------------------
-			appOpts := fillOptions(args, cmdOpts, languages)
+			appOpts := fillOptions(cmdOpts, languages)
 
+			fmt.Printf("Paths:       %+v\n", args)
 			fmt.Printf("Cmd Options: %+v\n", cmdOpts)
 			fmt.Printf("App Options: %+v\n", appOpts)
 
 			// Launch process
 			// --------------
 			// TODO: To implement
-			processor := cloc.NewProcessor(languages, appOpts)
+			processor := cloc.NewProcessor(languages, appOpts, args)
 			result, err := processor.Analyse()
 			fmt.Printf("result=%v, err=%v\n", result, err)
 
@@ -102,16 +102,15 @@ func Execute() error {
 
 // fillOptions fills applications options from command options.
 // TODO: Test
-func fillOptions(args []string, cmdOpts CmdOptions, languages *language.DefinedLanguages) *cloc.Options {
+func fillOptions(cmdOpts CmdOptions, languages *cloc.DefinedLanguages) *cloc.Options {
 	opts := cloc.NewOptions()
-	opts.Paths = args
 	opts.Debug = cmdOpts.Debug
 	opts.SkipDuplicated = cmdOpts.SkipDuplicated
 
 	// Excluded extensions
 	// -------------------
 	for _, ext := range strings.Split(cmdOpts.ExcludeExt, ",") {
-		e, ok := language.Extensions[ext]
+		e, ok := cloc.Extensions[ext]
 		if ok {
 			opts.ExcludeExts[e] = struct{}{}
 		}

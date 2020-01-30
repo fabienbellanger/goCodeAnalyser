@@ -1,4 +1,12 @@
-package language
+package cloc
+
+import (
+	"bufio"
+	"bytes"
+	"os"
+	"regexp"
+	"unicode"
+)
 
 // Language represents a language with its properties.
 type Language struct {
@@ -10,6 +18,7 @@ type Language struct {
 	Comments     int32
 	Blanks       int32
 	Total        int32
+	Size         float64
 }
 
 // DefinedLanguages represents a map of available Language.
@@ -19,6 +28,23 @@ type DefinedLanguages struct {
 
 // Languages is a slice of Language.
 type Languages []Language
+
+var (
+	// shebang regex
+	shebangEnvRegex  = regexp.MustCompile("^#! *(\\S+/env) ([a-zA-Z]+)")
+	shebangLangRegex = regexp.MustCompile("^#! *[.a-zA-Z/]+/([a-zA-Z]+)")
+
+	// shebangToExtension converts shebang to extension.
+	shebangToExtension = map[string]string{
+		"gosh":    "scm",
+		"make":    "make",
+		"perl":    "pl",
+		"rc":      "plan9sh",
+		"python":  "py",
+		"ruby":    "rb",
+		"escript": "erl",
+	}
+)
 
 // NewLanguage returns a Language.
 func NewLanguage(name string, lineComments []string, multiLines [][]string) *Language {
@@ -181,4 +207,48 @@ func NewDefinedLanguages() *DefinedLanguages {
 			"Zsh":                 NewLanguage("Zsh", []string{"#"}, [][]string{{"", ""}}),
 		},
 	}
+}
+
+// getShebang returns shebang.
+func getShebang(line string) (shebangLang string, ok bool) {
+	ret := shebangEnvRegex.FindAllStringSubmatch(line, -1)
+	if ret != nil && len(ret[0]) == 3 {
+		shebangLang = ret[0][2]
+		if sl, ok := shebangToExtension[shebangLang]; ok {
+			return sl, ok
+		}
+		return shebangLang, true
+	}
+
+	ret = shebangLangRegex.FindAllStringSubmatch(line, -1)
+	if ret != nil && len(ret[0]) >= 2 {
+		shebangLang = ret[0][1]
+		if sl, ok := shebangToExtension[shebangLang]; ok {
+			return sl, ok
+		}
+		return shebangLang, true
+	}
+
+	return "", false
+}
+
+// getExtensionByShebang returns extension from shebang.
+func getExtensionByShebang(path string) (shebangLang string, ok bool) {
+	f, err := os.Open(path)
+	if err != nil {
+		return shebangLang, false
+	}
+	defer f.Close()
+
+	reader := bufio.NewReader(f)
+	line, err := reader.ReadBytes('\n')
+	if err != nil {
+		return shebangLang, ok
+	}
+	line = bytes.TrimLeftFunc(line, unicode.IsSpace)
+
+	if len(line) > 2 && line[0] == '#' && line[1] == '!' {
+		return getShebang(string(line))
+	}
+	return shebangLang, ok
 }

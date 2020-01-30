@@ -4,7 +4,6 @@ import "regexp"
 
 // Options lists CLOC application options.
 type Options struct {
-	Paths          []string
 	Debug          bool
 	SkipDuplicated bool
 	ExcludeExts    map[string]struct{}
@@ -16,7 +15,6 @@ type Options struct {
 // NewOptions returns application options.
 func NewOptions() *Options {
 	return &Options{
-		Paths:          make([]string, 0),
 		Debug:          false,
 		SkipDuplicated: false,
 		ExcludeExts:    make(map[string]struct{}),

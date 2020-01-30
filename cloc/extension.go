@@ -1,4 +1,13 @@
-package language
+package cloc
+
+import (
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
+
+	"github.com/src-d/enry/v2"
+)
 
 var (
 	// Extensions lists all available extensions.
@@ -205,15 +214,59 @@ var (
 		"zig":         "Zig",
 		"zsh":         "Zsh",
 	}
-
-	// shebangToExtension converts shebang to extension.
-	shebangToExtension = map[string]string{
-		"gosh":    "scm",
-		"make":    "make",
-		"perl":    "pl",
-		"rc":      "plan9sh",
-		"python":  "py",
-		"ruby":    "rb",
-		"escript": "erl",
-	}
 )
+
+// getExtension returns file extension from a path.
+func getExtension(path string, opts *Options) (ext string, ok bool) {
+	ext = filepath.Ext(path)
+	base := filepath.Base(path)
+
+	switch ext {
+	case ".m", ".v", ".fs", ".r", ".ts":
+		content, err := ioutil.ReadFile(path)
+		if err != nil {
+			return "", false
+		}
+
+		lang := enry.GetLanguage(path, content)
+		if opts.Debug {
+			fmt.Printf("path=%v, lang=%v\n", path, lang)
+		}
+		return lang, true
+	}
+
+	switch base {
+	case "meson.build", "meson_options.txt":
+		return "meson", true
+	case "CMakeLists.txt":
+		return "cmake", true
+	case "configure.ac":
+		return "m4", true
+	case "Makefile.am":
+		return "makefile", true
+	case "build.xml":
+		return "Ant", true
+	case "pom.xml":
+		return "maven", true
+	}
+
+	switch strings.ToLower(base) {
+	case "makefile":
+		return "makefile", true
+	case "nukefile":
+		return "nu", true
+	case "rebar": // skip
+		return "", false
+	}
+
+	shebangLang, ok := getExtensionByShebang(path)
+	if ok {
+		return shebangLang, true
+	}
+
+	if len(ext) >= 2 {
+		return ext[1:], true
+	}
+
+	return ext, ok
+}
