@@ -13,12 +13,11 @@ type Processor struct {
 	paths []string
 }
 
-// Result returns the analyse results
+// Result returns the analysis results
 type Result struct {
 	// Total         *Language
-	Files         map[string]*File
-	Languages     map[string]*Language
-	MaxPathLength int
+	Files     map[string]*File
+	Languages map[string]*Language
 }
 
 // NewProcessor returns a processor.
@@ -30,15 +29,34 @@ func NewProcessor(langs *DefinedLanguages, options *Options, paths []string) *Pr
 	}
 }
 
-// Analyse starts files analyse.
-func (p *Processor) Analyse() (*Result, error) {
+// Analyze starts files analysis.
+func (p *Processor) Analyze() (*Result, error) {
 	// List all files and init languages
 	// ---------------------------------
 	languages, err := p.initLanguages()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("languages=%v\n", languages)
+
+	// Analyze of each file
+	// --------------------
+	files := make(map[string]*File, getTotalFiles(languages))
+	fmt.Printf("files=%+v\n", files)
+	for _, language := range languages {
+		for _, file := range language.Files {
+			// File analysis
+			// -------------
+			f := NewFile(file, language.Name)
+			f.analyze(language, p.opts)
+
+			// Update language
+			// ---------------
+			language.Size += f.Size
+
+			fmt.Printf("file=%+v\n", f)
+		}
+	}
+	fmt.Printf("\nlanguages=%v\n", languages["Go"])
 
 	return nil, nil
 }

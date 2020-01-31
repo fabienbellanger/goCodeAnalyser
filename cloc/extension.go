@@ -216,7 +216,7 @@ var (
 	}
 )
 
-// getExtension returns file extension from a path.
+// getExtension returns file extension from a path with options contraints.
 func getExtension(path string, opts *Options) (ext string, ok bool) {
 	ext = filepath.Ext(path)
 	base := filepath.Base(path)

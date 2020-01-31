@@ -22,12 +22,6 @@ update:
 update-all:
 	$(GOGET) -u all && $(GOMOD) tidy
 
-version:
-	$(GORUN) main.go version
-
-analyse:
-	$(GORUN) main.go analyse
-
 build: 
 	$(GOBUILD) -o $(BINARY_NAME) -v
 

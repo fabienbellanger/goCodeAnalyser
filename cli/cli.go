@@ -62,12 +62,13 @@ var (
 			fmt.Printf("Paths:       %+v\n", args)
 			fmt.Printf("Cmd Options: %+v\n", cmdOpts)
 			fmt.Printf("App Options: %+v\n", appOpts)
+			fmt.Println("")
 
 			// Launch process
 			// --------------
 			// TODO: To implement
 			processor := cloc.NewProcessor(languages, appOpts, args)
-			result, err := processor.Analyse()
+			result, err := processor.Analyze()
 			fmt.Printf("result=%v, err=%v\n", result, err)
 
 			displayDuration(time.Since(tStart))

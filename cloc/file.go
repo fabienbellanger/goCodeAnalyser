@@ -11,14 +11,48 @@ import (
 // File represents a file with its properties.
 type File struct {
 	Name     string `xml:"name,attr" json:"name"`
+	Size     int64  `xml:"size,attr" json:"size"`
 	Language string `xml:"language,attr" json:"language"`
 	Code     int32  `xml:"code,attr" json:"code"`
 	Comments int32  `xml:"comment,attr" json:"comment"`
 	Blanks   int32  `xml:"blank,attr" json:"blank"`
 }
 
-// Files is a slice of File.
-type Files []File
+// NewFile returns a pointer to File.
+func NewFile(name, language string) *File {
+	return &File{
+		Name:     name,
+		Language: language,
+	}
+}
+
+// analyze analyze a file.
+// TODO: To implement!
+func (f *File) analyze(language *Language, opts *Options) {
+	// Open file
+	// ---------
+	file, err := os.Open(f.Name)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	// File size
+	// ---------
+	fileInfo, _ := file.Stat()
+	if err == nil {
+		f.Size = fileInfo.Size()
+	}
+
+	// Debug mode
+	// ----------
+	if opts.Debug {
+		fmt.Printf("\n>> %s\n%s\n", f.Name, strings.Repeat("-", len(f.Name)+3))
+	}
+
+	// File analysis
+	// -------------
+}
 
 // isVCSDir checks if directory is a version control system.
 func isVCSDir(path string) bool {

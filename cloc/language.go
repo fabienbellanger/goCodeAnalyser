@@ -18,7 +18,7 @@ type Language struct {
 	Comments     int32
 	Blanks       int32
 	Total        int32
-	Size         float64
+	Size         int64
 }
 
 // DefinedLanguages represents a map of available Language.
@@ -46,7 +46,7 @@ var (
 	}
 )
 
-// NewLanguage returns a Language.
+// NewLanguage returns a pointer to Language.
 func NewLanguage(name string, lineComments []string, multiLines [][]string) *Language {
 	return &Language{
 		Name:         name,
@@ -251,4 +251,12 @@ func getExtensionByShebang(path string) (shebangLang string, ok bool) {
 		return getShebang(string(line))
 	}
 	return shebangLang, ok
+}
+
+// getTotalFiles returns the number of files to analyze.
+func getTotalFiles(langs map[string]*Language) (t int) {
+	for _, lang := range langs {
+		t += len(lang.Files)
+	}
+	return t
 }
