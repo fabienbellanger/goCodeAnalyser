@@ -76,20 +76,9 @@ func (p *Processor) initLanguages() (result map[string]*Language, err error) {
 				return nil
 			}
 
-			// Check VCS
-			// ---------
-			if !vcsInRoot && isVCSDir(path) {
-				return nil
-			}
-
-			// Check match and not-match directory options
-			// -------------------------------------------
-			// TODO: make a function to reduce cycomatic complexity
-			dir := filepath.Dir(path)
-			if p.opts.NotMatchDir != nil && p.opts.NotMatchDir.MatchString(dir) {
-				return nil
-			}
-			if p.opts.MatchDir != nil && !p.opts.MatchDir.MatchString(dir) {
+			// Check if the language is analysable
+			// -----------------------------------
+			if ok := isLanguageAnalysable(path, vcsInRoot, p.opts); !ok {
 				return nil
 			}
 

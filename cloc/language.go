@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"os"
+	"path/filepath"
 	"regexp"
 	"unicode"
 )
@@ -259,4 +260,26 @@ func getTotalFiles(langs map[string]*Language) (t int) {
 		t += len(lang.Files)
 	}
 	return t
+}
+
+// isLanguageAnalysable checks if a language must be analyze
+// (VCS, match and not-match directory).
+// The function returns true if it can be analyzed.
+func isLanguageAnalysable(path string, vcsInRoot bool, opts *Options) bool {
+	// Check VCS
+	// ---------
+	if !vcsInRoot && isVCSDir(path) {
+		return false
+	}
+
+	// Check match and not-match directory options
+	// -------------------------------------------
+	dir := filepath.Dir(path)
+	if opts.NotMatchDir != nil && opts.NotMatchDir.MatchString(dir) {
+		return false
+	}
+	if opts.MatchDir != nil && !opts.MatchDir.MatchString(dir) {
+		return false
+	}
+	return true
 }
