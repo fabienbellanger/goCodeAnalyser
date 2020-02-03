@@ -23,17 +23,18 @@ type File struct {
 
 var bsPool = sync.Pool{
 	New: func() interface{} {
-		return make([]byte, 0, 128*1024)
+		b := make([]byte, 0, 128*1024)
+		return &b
 	},
 }
 
 // getByteSlice returns an array of bytes.
-func getByteSlice() []byte {
-	return bsPool.Get().([]byte)
+func getByteSlice() *[]byte {
+	return bsPool.Get().(*[]byte)
 }
 
 // putByteSlice puts an array of bytes in the pool.
-func putByteSlice(bs []byte) {
+func putByteSlice(bs *[]byte) {
 	bsPool.Put(bs)
 }
 
@@ -82,7 +83,7 @@ func (f *File) read(file *os.File, language *Language, opts *Options) {
 	buf := getByteSlice()
 	defer putByteSlice(buf)
 	scanner := bufio.NewScanner(file)
-	scanner.Buffer(buf, 1024*1024)
+	scanner.Buffer(*buf, 1024*1024)
 
 	isFirstLine := true
 	inComments := [][2]string{}

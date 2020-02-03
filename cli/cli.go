@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fabienbellanger/goCodeAnalyser/cloc"
+	"github.com/fabienbellanger/goutils"
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
@@ -25,8 +26,8 @@ type CmdOptions struct {
 
 const (
 	appName = "Go Code Analyser"
-	author  = "Fabien Bellanger"
-	version = "0.0.1"
+	// author  = "Fabien Bellanger"
+	version = "0.1.0"
 )
 
 var (
@@ -47,7 +48,9 @@ var (
 			// Manage paths
 			// ------------
 			if len(args) == 0 {
-				cmd.Usage()
+				if err := cmd.Usage(); err != nil {
+					goutils.CheckError(err, 1)
+				}
 				return
 			}
 
@@ -139,5 +142,5 @@ func fillOptions(cmdOpts CmdOptions, languages *cloc.DefinedLanguages) *cloc.Opt
 
 // displayDuration displays commands execution duration.
 func displayDuration(d time.Duration) {
-	fmt.Printf(color.Sprintf(color.Italic("\nCommand execution time: %v\n\n"), d))
+	fmt.Println(color.Sprintf(color.Italic("\nCommand execution time: %v\n"), d))
 }

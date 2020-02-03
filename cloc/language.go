@@ -31,8 +31,8 @@ type Languages []Language
 
 var (
 	// shebang regex
-	shebangEnvRegex  = regexp.MustCompile("^#! *(\\S+/env) ([a-zA-Z]+)")
-	shebangLangRegex = regexp.MustCompile("^#! *[.a-zA-Z/]+/([a-zA-Z]+)")
+	shebangEnvRegex  = regexp.MustCompile(`^#! *(\\S+/env) ([a-zA-Z]+)`)
+	shebangLangRegex = regexp.MustCompile(`^#! *[.a-zA-Z/]+/([a-zA-Z]+)`)
 
 	// shebangToExtension converts shebang to extension.
 	shebangToExtension = map[string]string{

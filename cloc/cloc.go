@@ -66,7 +66,7 @@ func (p *Processor) Analyze() (*Result, error) {
 
 // initLanguages lists all files form paths and inits languages.
 func (p *Processor) initLanguages() (result map[string]*Language, err error) {
-	result = make(map[string]*Language, 0)
+	result = make(map[string]*Language)
 	filesCache := make(map[string]struct{})
 
 	for _, root := range p.paths {
