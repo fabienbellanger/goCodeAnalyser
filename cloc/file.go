@@ -75,7 +75,7 @@ func (f *File) analyze(language *Language, opts *Options) {
 }
 
 // read reads file to analyze.
-// TODO: Must be decomposed, cyclomatic complexy too hight (=30)
+// TODO: Must be decomposed, cyclomatic complexity too hight (=30)
 func (f *File) read(file *os.File, language *Language, opts *Options) {
 	// Buffer creation
 	// ---------------

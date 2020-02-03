@@ -56,7 +56,7 @@ func NewLanguage(name string, lineComments []string, multiLines [][]string) *Lan
 	}
 }
 
-// NewDefinedLanguages returns the list of all available languages with thier properties.
+// NewDefinedLanguages returns the list of all available languages with their properties.
 func NewDefinedLanguages() *DefinedLanguages {
 	return &DefinedLanguages{
 		Langs: map[string]*Language{
