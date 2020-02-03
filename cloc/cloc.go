@@ -41,7 +41,6 @@ func (p *Processor) Analyze() (*Result, error) {
 	// Analyze of each file
 	// --------------------
 	files := make(map[string]*File, getTotalFiles(languages))
-	fmt.Printf("files=%+v\n", files)
 	for _, language := range languages {
 		for _, file := range language.Files {
 			// File analysis
@@ -52,11 +51,15 @@ func (p *Processor) Analyze() (*Result, error) {
 			// Update language
 			// ---------------
 			language.Size += f.Size
+			language.Blanks += f.Blanks
+			language.Code += f.Code
+			language.Comments += f.Comments
 
+			files[file] = f
 			fmt.Printf("file=%+v\n", f)
 		}
 	}
-	fmt.Printf("\nlanguages=%v\n", languages["Go"])
+	fmt.Printf("\nlanguages=%+v\n", languages["Go"])
 
 	return nil, nil
 }
