@@ -67,7 +67,7 @@ func (f *File) analyze(language *Language, opts *Options) {
 	// Debug mode
 	// ----------
 	if opts.Debug {
-		fmt.Printf("\n>> %s\n%s\n", f.Name, strings.Repeat("-", len(f.Name)+3))
+		fmt.Printf("\n> %s\n%s\n", f.Name, strings.Repeat("-", len(f.Name)+2))
 	}
 
 	// File analysis
@@ -239,6 +239,7 @@ func isVCSDir(path string) bool {
 }
 
 // trimBOM trims BOM (UTF-8) of a line.
+// TODO: In goutils
 func trimBOM(line string) string {
 	l := len(line)
 	if l >= 3 {
@@ -284,6 +285,7 @@ func containsComment(line string, multiLines [][]string) bool {
 }
 
 // nextRune returns the next rune.
+// TODO: In goutils
 func nextRune(s string) rune {
 	for _, r := range s {
 		return r

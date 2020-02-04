@@ -1,7 +1,6 @@
 package cloc
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -57,10 +56,14 @@ func (p *Processor) Analyze() (*Result, error) {
 
 			files[file] = f
 		}
-	}
-	fmt.Printf("\nlanguages=%+v\n", languages["Go"])
 
-	return nil, nil
+		// TODO: Calculate totals
+	}
+
+	return &Result{
+		Files:     files,
+		Languages: languages,
+	}, nil
 }
 
 // initLanguages lists all files form paths and inits languages.

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fabienbellanger/goCodeAnalyser/cloc"
+	"github.com/fabienbellanger/goCodeAnalyser/output"
 	"github.com/fabienbellanger/goutils"
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
@@ -67,7 +68,15 @@ var (
 			// TODO: To implement
 			processor := cloc.NewProcessor(languages, appOpts, args)
 			result, err := processor.Analyze()
-			fmt.Printf("result=%v, err=%v\n", result, err)
+			if err != nil {
+				goutils.CheckError(err, 1)
+			}
+
+			// Display results
+			// ---------------
+			var w output.Writer
+			w = output.NewConsole()
+			w.Write(result)
 
 			displayDuration(time.Since(tStart))
 		},
