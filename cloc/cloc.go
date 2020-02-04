@@ -14,7 +14,7 @@ type Processor struct {
 
 // Result returns the analysis results
 type Result struct {
-	// Total         *Language
+	Total     *Language
 	Files     map[string]*File
 	Languages map[string]*Language
 }
@@ -30,6 +30,8 @@ func NewProcessor(langs *DefinedLanguages, options *Options, paths []string) *Pr
 
 // Analyze starts files analysis.
 func (p *Processor) Analyze() (*Result, error) {
+	total := NewLanguage("TOTAL", []string{}, [][]string{{"", ""}})
+
 	// List all files and init languages
 	// ---------------------------------
 	languages, err := p.initLanguages()
@@ -57,10 +59,21 @@ func (p *Processor) Analyze() (*Result, error) {
 			files[file] = f
 		}
 
-		// TODO: Calculate totals
+		// Totals
+		// ------
+		files := int32(len(language.Files))
+		if len(language.Files) <= 0 {
+			continue
+		}
+		total.Size += language.Size
+		total.Total += files
+		total.Blanks += language.Blanks
+		total.Comments += language.Comments
+		total.Code += language.Code
 	}
 
 	return &Result{
+		Total:     total,
 		Files:     files,
 		Languages: languages,
 	}, nil

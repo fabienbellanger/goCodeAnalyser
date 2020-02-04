@@ -7,6 +7,7 @@ import (
 
 // Options lists CLOC application options.
 type Options struct {
+	ByFile         bool
 	Debug          bool
 	SkipDuplicated bool
 	ExcludeExts    map[string]struct{}
@@ -18,6 +19,7 @@ type Options struct {
 // NewOptions returns application options.
 func NewOptions() *Options {
 	return &Options{
+		ByFile:         false,
 		Debug:          false,
 		SkipDuplicated: false,
 		ExcludeExts:    make(map[string]struct{}),

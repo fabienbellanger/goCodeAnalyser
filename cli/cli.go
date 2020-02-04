@@ -27,7 +27,6 @@ type CmdOptions struct {
 
 const (
 	appName = "Go Code Analyser"
-	// author  = "Fabien Bellanger"
 	version = "0.1.0"
 )
 
@@ -74,9 +73,10 @@ var (
 
 			// Display results
 			// ---------------
+			// TODO: Switch output!
 			var w output.Writer
 			w = output.NewConsole()
-			w.Write(result)
+			w.Write(result, appOpts)
 
 			displayDuration(time.Since(tStart))
 		},
@@ -112,6 +112,7 @@ func Execute() error {
 // TODO: Test
 func fillOptions(cmdOpts CmdOptions, languages *cloc.DefinedLanguages) *cloc.Options {
 	opts := cloc.NewOptions()
+	opts.ByFile = cmdOpts.ByFile
 	opts.Debug = cmdOpts.Debug
 	opts.SkipDuplicated = cmdOpts.SkipDuplicated
 
