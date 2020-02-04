@@ -55,6 +55,7 @@ func (p *Processor) Analyze() (*Result, error) {
 			language.Blanks += f.Blanks
 			language.Code += f.Code
 			language.Comments += f.Comments
+			language.Lines += f.Lines
 
 			files[file] = f
 		}
@@ -70,6 +71,7 @@ func (p *Processor) Analyze() (*Result, error) {
 		total.Blanks += language.Blanks
 		total.Comments += language.Comments
 		total.Code += language.Code
+		total.Lines += language.Lines
 	}
 
 	return &Result{

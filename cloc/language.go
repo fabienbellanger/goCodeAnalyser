@@ -19,6 +19,7 @@ type Language struct {
 	Comments     int32
 	Blanks       int32
 	Total        int32
+	Lines        int32
 	Size         int64
 }
 

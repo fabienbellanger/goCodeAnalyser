@@ -19,6 +19,7 @@ type File struct {
 	Code     int32  `xml:"code,attr" json:"code"`
 	Comments int32  `xml:"comment,attr" json:"comment"`
 	Blanks   int32  `xml:"blank,attr" json:"blank"`
+	Lines    int32  `xml:"lines,attr" json:"lines"`
 }
 
 var bsPool = sync.Pool{
@@ -91,6 +92,7 @@ func (f *File) read(file *os.File, language *Language, opts *Options) {
 	// Lines
 	// -----
 	for scanner.Scan() {
+		f.Lines++
 		lineOrg := scanner.Text()
 		line := strings.TrimSpace(lineOrg)
 

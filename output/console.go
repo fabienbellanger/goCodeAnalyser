@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fabienbellanger/goCodeAnalyser/cloc"
+	"github.com/fabienbellanger/goutils"
 )
 
 const maxLanguagesLength = 20
@@ -32,12 +33,10 @@ func (c *Console) Write(result *cloc.Result, opts *cloc.Options) error {
 		maxTitle = maxFilesLength(result.Files)
 	}
 
+	// Display results
+	// ---------------
 	header(opts.ByFile, maxTitle)
-	footer(opts.ByFile, maxTitle)
-
-	// fmt.Printf("<%-[1]*[2]v>\n", 10, "toto")
-	// fmt.Printf("<%[1]*[2]v>\n", 10, 888)
-	// fmt.Printf("<%-[1]*[2]v>\n", 10, 888)
+	footer(opts.ByFile, maxTitle, result.Total)
 
 	return nil
 }
@@ -61,14 +60,14 @@ func header(byFile bool, maxLength int) {
 		title = "File"
 	}
 	fmt.Printf("%v\n", strings.Repeat("-", 80+maxLength))
-	fmt.Printf("| %-[1]*[2]v | %-9v | %-9v | %-9v | %-9v | %-9v | %-9v |\n",
-		maxLength+4, title, "Files", "Size", "Total", "Blanks", "Comments", "Code")
+	fmt.Printf("| %-[1]*[2]v | %9v | %9v | %9v | %9v | %9v | %9v |\n",
+		maxLength+4, title, "Files", "Size", "Lines", "Blanks", "Comments", "Code")
 	fmt.Printf("%v\n", strings.Repeat("-", 80+maxLength))
 }
 
-func footer(byFile bool, maxLength int) {
+func footer(byFile bool, maxLength int, t *cloc.Language) {
 	fmt.Printf("%v\n", strings.Repeat("-", 80+maxLength))
-	fmt.Printf("| %-[1]*[2]v | %-9v | %-9v | %-9v | %-9v | %-9v | %-9v |\n",
-		maxLength+4, "Total", "-", "-", "-", "-", "-", "-")
+	fmt.Printf("| %-[1]*[2]v | %9v | %9v | %9v | %9v | %9v | %9v |\n",
+		maxLength+4, "Total", t.Total, goutils.HumanSizeWithPrecision(float64(t.Size), 0), t.Lines, t.Blanks, t.Comments, t.Code)
 	fmt.Printf("%v\n", strings.Repeat("-", 80+maxLength))
 }
