@@ -88,7 +88,6 @@ func (f *File) read(file *os.File, language *Language, opts *Options) {
 	isFirstLine := true
 	inComments := [][2]string{}
 
-scannerloop:
 	// Lines
 	// -----
 	for scanner.Scan() {
@@ -108,74 +107,94 @@ scannerloop:
 			continue
 		}
 
+		// Single comments
+		// ---------------
 		if len(inComments) == 0 {
 			if isFirstLine {
 				line = trimBOM(line)
 			}
 
-		singleloop:
-			// Single comments
-			// ---------------
-			for _, singleComment := range language.lineComments {
-				if strings.HasPrefix(line, singleComment) {
-					// check if single comment is a prefix of multi comment
-					for _, ml := range language.multiLines {
-						if ml[0] != "" && strings.HasPrefix(line, ml[0]) {
-							break singleloop
-						}
-					}
-					f.onComment(opts, len(inComments) > 0, line, lineOrg)
-					continue scannerloop
-				}
-			}
-
-			if len(language.multiLines) == 0 {
-				f.onCode(opts, len(inComments) > 0, line, lineOrg)
-				continue scannerloop
+			stop := false
+			inComments, stop = f.analyzeSingleComments(line, lineOrg, language, opts, inComments)
+			if stop {
+				continue
 			}
 		}
 
 		if len(inComments) == 0 && !containsComment(line, language.multiLines) {
 			f.onCode(opts, len(inComments) > 0, line, lineOrg)
-			continue scannerloop
+			continue
 		}
 
-		isCode := false
-		lenLine := len(line)
+		// Multi comments
+		// --------------
 		if len(language.multiLines) == 1 && len(language.multiLines[0]) == 2 && language.multiLines[0][0] == "" {
 			f.onCode(opts, len(inComments) > 0, line, lineOrg)
 			continue
 		}
-		for pos := 0; pos < lenLine; {
-			for _, ml := range language.multiLines {
-				begin, end := ml[0], ml[1]
-				lenBegin := len(begin)
+		inComments = f.analyzeMultiComments(line, lineOrg, language, opts, inComments)
+	}
+}
 
-				if pos+lenBegin <= lenLine && strings.HasPrefix(line[pos:], begin) && (begin != end || len(inComments) == 0) {
-					pos += lenBegin
-					inComments = append(inComments, [2]string{begin, end})
-					continue
-				}
-
-				if n := len(inComments); n > 0 {
-					last := inComments[n-1]
-					if pos+len(last[1]) <= lenLine && strings.HasPrefix(line[pos:], last[1]) {
-						inComments = inComments[:n-1]
-						pos += len(last[1])
-					}
-				} else if pos < lenLine && !unicode.IsSpace(nextRune(line[pos:])) {
-					isCode = true
+// analyzeSingleComments analyzes single comments in file line.
+// It returns inComments array and a bool. If it equals to true, the program goes to the next line.
+func (f *File) analyzeSingleComments(line, lineOrg string, lang *Language, opts *Options, inComments [][2]string) ([][2]string, bool) {
+singleloop:
+	for _, singleComment := range lang.lineComments {
+		if strings.HasPrefix(line, singleComment) {
+			// Check if single comment is a prefix of multi comment
+			for _, ml := range lang.multiLines {
+				if ml[0] != "" && strings.HasPrefix(line, ml[0]) {
+					break singleloop
 				}
 			}
-			pos++
-		}
-
-		if isCode {
-			f.onCode(opts, len(inComments) > 0, line, lineOrg)
-		} else {
 			f.onComment(opts, len(inComments) > 0, line, lineOrg)
+			return inComments, true
 		}
 	}
+
+	if len(lang.multiLines) == 0 {
+		f.onCode(opts, len(inComments) > 0, line, lineOrg)
+		return inComments, true
+	}
+
+	return inComments, false
+}
+
+// analyzeMultiComments analyzes multi comments in file line and return inComments array with updates.
+func (f *File) analyzeMultiComments(line, lineOrg string, lang *Language, opts *Options, inComments [][2]string) [][2]string {
+	isCode := false
+	lenLine := len(line)
+	for pos := 0; pos < lenLine; pos++ {
+		for _, ml := range lang.multiLines {
+			begin, end := ml[0], ml[1]
+			lenBegin := len(begin)
+
+			if pos+lenBegin <= lenLine && strings.HasPrefix(line[pos:], begin) && (begin != end || len(inComments) == 0) {
+				pos += lenBegin
+				inComments = append(inComments, [2]string{begin, end})
+				continue
+			}
+
+			if n := len(inComments); n > 0 {
+				last := inComments[n-1]
+				if pos+len(last[1]) <= lenLine && strings.HasPrefix(line[pos:], last[1]) {
+					inComments = inComments[:n-1]
+					pos += len(last[1])
+				}
+			} else if pos < lenLine && !unicode.IsSpace(nextRune(line[pos:])) {
+				isCode = true
+			}
+		}
+	}
+
+	if isCode {
+		f.onCode(opts, len(inComments) > 0, line, lineOrg)
+	} else {
+		f.onComment(opts, len(inComments) > 0, line, lineOrg)
+	}
+
+	return inComments
 }
 
 // onBlank update File blanks informations.

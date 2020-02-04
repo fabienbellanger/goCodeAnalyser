@@ -62,11 +62,6 @@ var (
 			// ------------------------
 			appOpts := fillOptions(cmdOpts, languages)
 
-			fmt.Printf("Paths:       %+v\n", args)
-			fmt.Printf("Cmd Options: %+v\n", cmdOpts)
-			fmt.Printf("App Options: %+v\n", appOpts)
-			fmt.Println("")
-
 			// Launch process
 			// --------------
 			// TODO: To implement

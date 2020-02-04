@@ -56,7 +56,6 @@ func (p *Processor) Analyze() (*Result, error) {
 			language.Comments += f.Comments
 
 			files[file] = f
-			fmt.Printf("file=%+v\n", f)
 		}
 	}
 	fmt.Printf("\nlanguages=%+v\n", languages["Go"])
