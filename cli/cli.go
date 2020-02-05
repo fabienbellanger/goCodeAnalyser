@@ -23,6 +23,7 @@ type CmdOptions struct {
 	IncludeLang    string
 	MatchDir       string
 	NotMatchDir    string
+	Sort           string
 }
 
 const (
@@ -91,7 +92,7 @@ func Execute() error {
 
 	// Flags
 	// -----
-	rootCommand.Flags().BoolVar(&cmdOpts.ByFile, "by-file", false, "Display by file")
+	rootCommand.Flags().BoolVar(&cmdOpts.ByFile, "files", false, "Display by file")
 	rootCommand.Flags().BoolVar(&cmdOpts.Debug, "debug", false, "Display debug log")
 	rootCommand.Flags().BoolVar(&cmdOpts.SkipDuplicated, "skip-duplicated", false, "Skip duplicated files")
 	rootCommand.Flags().StringVar(&cmdOpts.OutputType, "output-type", "", "Output type [values: default,json,html]")
@@ -99,6 +100,7 @@ func Execute() error {
 	rootCommand.Flags().StringVar(&cmdOpts.IncludeLang, "include-lang", "", "Include language name (separated commas)")
 	rootCommand.Flags().StringVar(&cmdOpts.MatchDir, "match-dir", "", "Include dir name (regex)")
 	rootCommand.Flags().StringVar(&cmdOpts.NotMatchDir, "not-match-dir", "", "Exclude dir name (regex)")
+	rootCommand.Flags().StringVar(&cmdOpts.Sort, "sort", "code", "Sort languages based on column [possible values: files, lines, blanks, code, comments or size]")
 
 	// Launch root command
 	// -------------------
@@ -111,10 +113,17 @@ func Execute() error {
 // fillOptions fills applications options from command options.
 // TODO: Test
 func fillOptions(cmdOpts CmdOptions, languages *cloc.DefinedLanguages) *cloc.Options {
+	// Checks sort values
+	// ------------------
+	if !cloc.CheckSort(cmdOpts.Sort) {
+		cmdOpts.Sort = "code"
+	}
+
 	opts := cloc.NewOptions()
 	opts.ByFile = cmdOpts.ByFile
 	opts.Debug = cmdOpts.Debug
 	opts.SkipDuplicated = cmdOpts.SkipDuplicated
+	opts.Sort = cmdOpts.Sort
 
 	// Excluded extensions
 	// -------------------

@@ -3,6 +3,8 @@ package cloc
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/fabienbellanger/goutils"
 )
 
 // Options lists CLOC application options.
@@ -14,6 +16,7 @@ type Options struct {
 	IncludeLangs   map[string]struct{}
 	MatchDir       *regexp.Regexp
 	NotMatchDir    *regexp.Regexp
+	Sort           string
 }
 
 // NewOptions returns application options.
@@ -24,7 +27,14 @@ func NewOptions() *Options {
 		SkipDuplicated: false,
 		ExcludeExts:    make(map[string]struct{}),
 		IncludeLangs:   make(map[string]struct{}),
+		Sort:           "code",
 	}
+}
+
+// CheckSort checks if sort value is correct (code, size, lines, comments, blanks or files).
+func CheckSort(s string) bool {
+	correctSorts := []string{"code", "size", "lines", "comments", "blanks", "files"}
+	return goutils.StringInSlice(s, correctSorts)
 }
 
 // checkFileOptions checks if a file respects options.

@@ -31,7 +31,7 @@ func (c *Console) Write(result *cloc.Result, opts *cloc.Options) error {
 	// Display results
 	// ---------------
 	header(opts.ByFile, maxTitle)
-	body(opts.ByFile, maxTitle, result)
+	body(opts.ByFile, opts.Sort, maxTitle, result)
 	footer(opts.ByFile, maxTitle, result.Total)
 
 	return nil
@@ -71,46 +71,70 @@ func footer(byFile bool, maxLength int, t *cloc.Language) {
 }
 
 // body displays languages or files information.
-func body(byFile bool, maxLength int, r *cloc.Result) {
+func body(byFile bool, sortType string, maxLength int, r *cloc.Result) {
 	if byFile {
-		// Sort by Code
-		// ------------
-		sortedFiles := make(cloc.FilesByCode, 0, len(r.Files))
+		// Sort
+		// ----
+		filesSlice := make([]*cloc.File, 0, len(r.Files))
 		for k := range r.Files {
-			sortedFiles = append(sortedFiles, *r.Files[k])
+			filesSlice = append(filesSlice, r.Files[k])
 		}
-		sort.Sort(sortedFiles)
+		switch sortType {
+		case "size":
+			sort.Sort(cloc.FilesSort{Files: filesSlice, LessCmp: cloc.FileBySize})
+		case "lines":
+			sort.Sort(cloc.FilesSort{Files: filesSlice, LessCmp: cloc.FileByLines})
+		case "comments":
+			sort.Sort(cloc.FilesSort{Files: filesSlice, LessCmp: cloc.FileByComments})
+		case "blanks":
+			sort.Sort(cloc.FilesSort{Files: filesSlice, LessCmp: cloc.FileByBlanks})
+		default:
+			sort.Sort(cloc.FilesSort{Files: filesSlice, LessCmp: cloc.FileByCode})
+		}
 
-		for k := range sortedFiles {
+		for k := range filesSlice {
 			fmt.Printf("| %-[1]*[2]v | %9v | %9v | %9v | %9v | %9v | %9v |\n",
 				maxLength+4,
-				sortedFiles[k].Name,
+				filesSlice[k].Name,
 				"",
-				goutils.HumanSizeWithPrecision(float64(sortedFiles[k].Size), 0),
-				sortedFiles[k].Lines,
-				sortedFiles[k].Blanks,
-				sortedFiles[k].Comments,
-				sortedFiles[k].Code)
+				goutils.HumanSizeWithPrecision(float64(filesSlice[k].Size), 0),
+				filesSlice[k].Lines,
+				filesSlice[k].Blanks,
+				filesSlice[k].Comments,
+				filesSlice[k].Code)
 		}
 	} else {
 		// Sort by Code
 		// ------------
-		sortedLanguages := make(cloc.LanguagesByCode, 0, len(r.Languages))
+		languagesSlice := make([]*cloc.Language, 0, len(r.Languages))
 		for k := range r.Languages {
-			sortedLanguages = append(sortedLanguages, *r.Languages[k])
+			languagesSlice = append(languagesSlice, r.Languages[k])
 		}
-		sort.Sort(sortedLanguages)
+		switch sortType {
+		case "files":
+			sort.Sort(cloc.LanguagesSort{Langs: languagesSlice, LessCmp: cloc.LanguagesByFiles})
+		case "size":
+			sort.Sort(cloc.LanguagesSort{Langs: languagesSlice, LessCmp: cloc.LanguagesBySize})
+		case "lines":
+			sort.Sort(cloc.LanguagesSort{Langs: languagesSlice, LessCmp: cloc.LanguagesByLines})
+		case "comments":
+			sort.Sort(cloc.LanguagesSort{Langs: languagesSlice, LessCmp: cloc.LanguagesByComments})
+		case "blanks":
+			sort.Sort(cloc.LanguagesSort{Langs: languagesSlice, LessCmp: cloc.LanguagesByBlanks})
+		default:
+			sort.Sort(cloc.LanguagesSort{Langs: languagesSlice, LessCmp: cloc.LanguagesByCode})
+		}
 
-		for k := range sortedLanguages {
+		for k := range languagesSlice {
 			fmt.Printf("| %-[1]*[2]v | %9v | %9v | %9v | %9v | %9v | %9v |\n",
 				maxLength+4,
-				sortedLanguages[k].Name,
-				sortedLanguages[k].Total,
-				goutils.HumanSizeWithPrecision(float64(sortedLanguages[k].Size), 0),
-				sortedLanguages[k].Lines,
-				sortedLanguages[k].Blanks,
-				sortedLanguages[k].Comments,
-				sortedLanguages[k].Code)
+				languagesSlice[k].Name,
+				languagesSlice[k].Total,
+				goutils.HumanSizeWithPrecision(float64(languagesSlice[k].Size), 0),
+				languagesSlice[k].Lines,
+				languagesSlice[k].Blanks,
+				languagesSlice[k].Comments,
+				languagesSlice[k].Code)
 		}
 	}
 }
