@@ -28,9 +28,6 @@ type DefinedLanguages struct {
 	Langs map[string]*Language
 }
 
-// Languages is a slice of Language.
-type Languages []Language
-
 var (
 	// shebang regex
 	shebangEnvRegex  = regexp.MustCompile(`^#! *(\\S+/env) ([a-zA-Z]+)`)
@@ -115,7 +112,7 @@ func NewDefinedLanguages() *DefinedLanguages {
 			"FORTRAN Legacy":      NewLanguage("FORTRAN Legacy", []string{"c", "C", "!", "*"}, [][]string{{"", ""}}),
 			"FORTRAN Modern":      NewLanguage("FORTRAN Modern", []string{"!"}, [][]string{{"", ""}}),
 			"Gherkin":             NewLanguage("Gherkin", []string{"#"}, [][]string{{"", ""}}),
-			"GLSL":                NewLanguage("GLSL", []string{"//"}, [][]string{{"/*", "*/"}}),
+			"GlL":                 NewLanguage("GLSL", []string{"//"}, [][]string{{"/*", "*/"}}),
 			"Go":                  NewLanguage("Go", []string{"//"}, [][]string{{"/*", "*/"}}),
 			"Groovy":              NewLanguage("Groovy", []string{"//"}, [][]string{{"/*", "*/"}}),
 			"Haskell":             NewLanguage("Haskell", []string{"--"}, [][]string{{"{-", "-}"}}),

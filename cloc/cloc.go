@@ -39,10 +39,12 @@ func (p *Processor) Analyze() (*Result, error) {
 		return nil, err
 	}
 
-	// Analyze of each file
-	// --------------------
+	// Analyze of each filen by language
+	// ---------------------------------
 	files := make(map[string]*File, getTotalFiles(languages))
 	for _, language := range languages {
+		// Use a WaitGroup
+		//go func(language *Language, p *Processor) {
 		for _, file := range language.Files {
 			// File analysis
 			// -------------
@@ -51,6 +53,7 @@ func (p *Processor) Analyze() (*Result, error) {
 
 			// Update language
 			// ---------------
+			language.Total++
 			language.Size += f.Size
 			language.Blanks += f.Blanks
 			language.Code += f.Code
@@ -59,6 +62,7 @@ func (p *Processor) Analyze() (*Result, error) {
 
 			files[file] = f
 		}
+		//}(language, p)
 
 		// Totals
 		// ------

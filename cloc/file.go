@@ -48,7 +48,6 @@ func NewFile(name, language string) *File {
 }
 
 // analyze analyze a file.
-// TODO: To implement!
 func (f *File) analyze(language *Language, opts *Options) {
 	// Open file
 	// ---------
@@ -77,7 +76,6 @@ func (f *File) analyze(language *Language, opts *Options) {
 }
 
 // read reads file to analyze.
-// TODO: Must be decomposed, cyclomatic complexity too hight (=30)
 func (f *File) read(file *os.File, language *Language, opts *Options) {
 	// Buffer creation
 	// ---------------
