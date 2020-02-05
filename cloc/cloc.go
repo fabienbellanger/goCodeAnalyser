@@ -3,6 +3,7 @@ package cloc
 import (
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 // Processor represents a process instance
@@ -39,30 +40,36 @@ func (p *Processor) Analyze() (*Result, error) {
 		return nil, err
 	}
 
+	var wg sync.WaitGroup
+
 	// Analyze of each filen by language
 	// ---------------------------------
 	files := make(map[string]*File, getTotalFiles(languages))
 	for _, language := range languages {
-		// Use a WaitGroup
-		//go func(language *Language, p *Processor) {
-		for _, file := range language.Files {
-			// File analysis
-			// -------------
-			f := NewFile(file, language.Name)
-			f.analyze(language, p.opts)
+		wg.Add(1)
+		go func(language *Language, p *Processor, wg *sync.WaitGroup) {
+			defer wg.Done()
 
-			// Update language
-			// ---------------
-			language.Total++
-			language.Size += f.Size
-			language.Blanks += f.Blanks
-			language.Code += f.Code
-			language.Comments += f.Comments
-			language.Lines += f.Lines
+			for _, file := range language.Files {
+				// File analysis
+				// -------------
+				f := NewFile(file, language.Name)
+				f.analyze(language, p.opts)
 
-			files[file] = f
-		}
-		//}(language, p)
+				// Update language
+				// ---------------
+				language.Total++
+				language.Size += f.Size
+				language.Blanks += f.Blanks
+				language.Code += f.Code
+				language.Comments += f.Comments
+				language.Lines += f.Lines
+
+				files[file] = f
+			}
+		}(language, p, &wg)
+
+		wg.Wait()
 
 		// Totals
 		// ------
