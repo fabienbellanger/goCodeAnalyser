@@ -56,18 +56,18 @@ func header(byFile bool, maxLength int) {
 	if byFile {
 		title = "File"
 	}
-	fmt.Printf("\n%v\n", strings.Repeat("-", 80+maxLength))
-	fmt.Printf("| %-[1]*[2]v | %9v | %9v | %9v | %9v | %9v | %9v |\n",
+	fmt.Printf("\n%v\n", strings.Repeat("─", 80+maxLength))
+	fmt.Printf("│ %-[1]*[2]v │ %9v │ %9v │ %9v │ %9v │ %9v │ %9v │\n",
 		maxLength+4, title, "Files", "Size", "Lines", "Blanks", "Comments", "Code")
-	fmt.Printf("%v\n", strings.Repeat("-", 80+maxLength))
+	fmt.Printf("%v\n", strings.Repeat("─", 80+maxLength))
 }
 
 // footer displays array footer.
 func footer(byFile bool, maxLength int, t *cloc.Language) {
-	fmt.Printf("%v\n", strings.Repeat("-", 80+maxLength))
-	fmt.Printf("| %-[1]*[2]v | %9v | %9v | %9v | %9v | %9v | %9v |\n",
+	fmt.Printf("%v\n", strings.Repeat("─", 80+maxLength))
+	fmt.Printf("│ %-[1]*[2]v │ %9v │ %9v │ %9v │ %9v │ %9v │ %9v │\n",
 		maxLength+4, "Total", t.Total, goutils.HumanSizeWithPrecision(float64(t.Size), 0), t.Lines, t.Blanks, t.Comments, t.Code)
-	fmt.Printf("%v\n", strings.Repeat("-", 80+maxLength))
+	fmt.Printf("%v\n", strings.Repeat("─", 80+maxLength))
 }
 
 // body displays languages or files information.
@@ -93,7 +93,7 @@ func body(byFile bool, sortType string, maxLength int, r *cloc.Result) {
 		}
 
 		for k := range filesSlice {
-			fmt.Printf("| %-[1]*[2]v | %9v | %9v | %9v | %9v | %9v | %9v |\n",
+			fmt.Printf("│ %-[1]*[2]v │ %9v │ %9v │ %9v │ %9v │ %9v │ %9v │\n",
 				maxLength+4,
 				filesSlice[k].Name,
 				"",
@@ -126,7 +126,7 @@ func body(byFile bool, sortType string, maxLength int, r *cloc.Result) {
 		}
 
 		for k := range languagesSlice {
-			fmt.Printf("| %-[1]*[2]v | %9v | %9v | %9v | %9v | %9v | %9v |\n",
+			fmt.Printf("│ %-[1]*[2]v │ %9v │ %9v │ %9v │ %9v │ %9v │ %9v │\n",
 				maxLength+4,
 				languagesSlice[k].Name,
 				languagesSlice[k].Total,

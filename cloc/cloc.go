@@ -20,6 +20,17 @@ type Result struct {
 	Languages map[string]*Language
 }
 
+type syncMap struct {
+	m map[string]*File
+	sync.RWMutex
+}
+
+func newSyncMap(n int) *syncMap {
+	return &syncMap{
+		m: make(map[string]*File, n),
+	}
+}
+
 // NewProcessor returns a processor.
 func NewProcessor(langs *DefinedLanguages, options *Options, paths []string) *Processor {
 	return &Processor{
@@ -44,10 +55,12 @@ func (p *Processor) Analyze() (*Result, error) {
 
 	// Analyze of each filen by language
 	// ---------------------------------
-	files := make(map[string]*File, getTotalFiles(languages))
+	syncFiles := newSyncMap(getTotalFiles(languages))
+	// files := make(map[string]*File, getTotalFiles(languages))
+
 	for _, language := range languages {
 		wg.Add(1)
-		go func(language *Language, p *Processor, wg *sync.WaitGroup) {
+		go func(language, total *Language, p *Processor, wg *sync.WaitGroup) {
 			defer wg.Done()
 
 			for _, file := range language.Files {
@@ -65,29 +78,32 @@ func (p *Processor) Analyze() (*Result, error) {
 				language.Comments += f.Comments
 				language.Lines += f.Lines
 
-				files[file] = f
+				// Bad performance?
+				syncFiles.Lock()
+				syncFiles.m[file] = f
+				syncFiles.Unlock()
 			}
-		}(language, p, &wg)
 
-		wg.Wait()
-
-		// Totals
-		// ------
-		files := int32(len(language.Files))
-		if len(language.Files) <= 0 {
-			continue
-		}
-		total.Size += language.Size
-		total.Total += files
-		total.Blanks += language.Blanks
-		total.Comments += language.Comments
-		total.Code += language.Code
-		total.Lines += language.Lines
+			// Totals
+			// ------
+			nbFiles := int32(len(language.Files))
+			if len(language.Files) <= 0 {
+				return
+			}
+			total.Size += language.Size
+			total.Total += nbFiles
+			total.Blanks += language.Blanks
+			total.Comments += language.Comments
+			total.Code += language.Code
+			total.Lines += language.Lines
+		}(language, total, p, &wg)
 	}
+
+	wg.Wait()
 
 	return &Result{
 		Total:     total,
-		Files:     files,
+		Files:     syncFiles.m,
 		Languages: languages,
 	}, nil
 }

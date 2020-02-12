@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 
@@ -79,6 +80,7 @@ var (
 			w = output.NewConsole()
 			w.Write(result, appOpts)
 
+			fmt.Printf("\nNumber of CPU: %d\n", runtime.NumCPU())
 			displayDuration(time.Since(tStart))
 		},
 	}
